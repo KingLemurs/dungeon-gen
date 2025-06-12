@@ -49,12 +49,13 @@ public class MapGenerator : MonoBehaviour
         if (iterations > THRESHOLD) throw new System.Exception("Iteration limit exceeded");
         if (doors.Count == 0)
         {
-            return depth > 4 ? true : false;
+            return depth > 4;
         }
         
         // pick door
         Door door = doors[Random.Range(0, doors.Count)];
         print(doors.Count);
+        print(door.GetDirection());
         Door.Direction dir = door.GetMatchingDirection();
         List<Room> frontier = new List<Room>();
         
@@ -68,36 +69,95 @@ public class MapGenerator : MonoBehaviour
                     break;
                 }
             }
+            
         }
         
-        // if no avail rooms
+        // if no avail room types
         if (frontier.Count == 0)
         {
             return false;
         }
-        
-        // choose random matching room from frontier
-        foreach (Room chosen in frontier)
-        {
-            doors.Remove(door);
-            // add doors from new room
-            doors.AddRange(chosen.GetDoors());
-            bool res = GenerateWithBacktracking(occupied, doors, depth + 1);
 
-            // if true stop
-            if (res)
+        while (frontier.Count != 0)
+        {
+            // choose random matching room type from frontier
+            List<Room> avail = new List<Room>();
+            foreach (var toAdd in frontier)
             {
-                chosen.Place(door.GetMatching().GetGridCoordinates());
-                occupied.Add(door.GetMatching().GetGridCoordinates());
-                break;
+                for (int i = 0; i < toAdd.weight; i++)
+                {
+                    avail.Add(toAdd);
+                }
+            }
+            Room chosen = avail[Random.Range(0, avail.Count)];
+            frontier.Remove(chosen);
+            doors.Remove(door);
+            
+            // see if room type can fit gap
+            GameObject placed = chosen.Place(door.GetMatching().GetGridCoordinates());
+            Room pr = placed.GetComponent<Room>();
+            bool reroll = false;
+
+            foreach (Door d in pr.GetDoors())
+            {
+                // if neighboring rooms are occupied
+                // otherwise we don't need to check for doors
+                if (occupied.Contains(d.GetMatching().GetGridCoordinates()))
+                {
+                    bool found = false;
+                    // if neighboring room has a door in that matching dir
+                    foreach (Door remaining in doors)
+                    {
+                        if (d.GetMatching().IsMatching(remaining))
+                        {
+                            found = true;
+                        }
+                    }
+                    // if we cannot find a matching door, that means there is a room there with a wall
+                    if (!found)
+                    {
+                        reroll = true;
+                        break;
+                    }
+                    
+                }
+            }
+
+            if (reroll)
+            {
+                Destroy(placed);
+                doors.Add(door);
+                continue;
             }
             
-            // if false backtrack and try again
+            // add doors from new room
             foreach (Door d in chosen.GetDoors())
             {
-                doors.Remove(d);
+                if (d.GetMatchingDirection() != door.GetDirection())
+                {
+                    doors.Add(d);
+                }
             }
-            doors.Add(door);
+            occupied.Add(door.GetMatching().GetGridCoordinates());
+            
+            
+            bool res = GenerateWithBacktracking(occupied, doors, depth + 1);
+        
+            // if false backtrack and try again
+            if (!res)
+            {
+                foreach (Door d in chosen.GetDoors())
+                {
+                    doors.Remove(d);
+                }
+                Destroy(placed);
+                doors.Add(door);
+                occupied.Remove(door.GetMatching().GetGridCoordinates());
+            }
+            else
+            {
+                break;
+            }
         }
         
         return true;

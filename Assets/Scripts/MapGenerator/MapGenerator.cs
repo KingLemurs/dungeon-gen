@@ -50,7 +50,7 @@ public class MapGenerator : MonoBehaviour
     bool GenerateWithBacktracking(List<Vector2Int> occupied, Dictionary<Vector2Int, Room> occupiedRooms, List<Door> doors, int depth)
     {
         if (iterations > THRESHOLD) throw new System.Exception("Iteration limit exceeded");
-        if (doors.Count == 0 && depth > 4)
+        if (doors.Count == 0)
         {
             int minX = int.MaxValue, maxX = int.MinValue;
             int minY = int.MaxValue, maxY = int.MinValue;
@@ -72,7 +72,7 @@ public class MapGenerator : MonoBehaviour
                 return false;
             }
 
-            return true;
+            return depth > 4;
         }
 
         
@@ -195,14 +195,11 @@ public class MapGenerator : MonoBehaviour
             {
                 foreach (Door d in chosen.GetDoors(location))
                 {
-                    if (d.IsHorizontal())
-                    {
-                        generated_objects.Add(horizontal_hallway.Place(d));
-                    }
-                    else
-                    {
-                        generated_objects.Add(vertical_hallway.Place(d));
-                    }
+                    var hallway = d.IsHorizontal()
+                        ? horizontal_hallway.Place(d)
+                        : vertical_hallway.Place(d);
+                    
+                    generated_objects.Add(hallway);
                 }
                 generated_objects.Add(placed);
                 return true;

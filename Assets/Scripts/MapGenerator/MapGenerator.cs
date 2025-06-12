@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine.InputSystem;
 
 public class MapGenerator : MonoBehaviour
@@ -38,13 +39,15 @@ public class MapGenerator : MonoBehaviour
         generated_objects.Add(start.Place(new Vector2Int(0,0)));
         List<Door> doors = start.GetDoors();
         List<Vector2Int> occupied = new List<Vector2Int>();
+        Dictionary<Vector2Int, Room> occupiedRooms = new Dictionary<Vector2Int, Room>();
         occupied.Add(new Vector2Int(0, 0));
+        occupiedRooms.Add(new Vector2Int(0,0), start);
         iterations = 0;
-        GenerateWithBacktracking(occupied, doors, 1);
+        GenerateWithBacktracking(occupied, occupiedRooms, doors, 1);
     }
 
 
-    bool GenerateWithBacktracking(List<Vector2Int> occupied, List<Door> doors, int depth)
+    bool GenerateWithBacktracking(List<Vector2Int> occupied, Dictionary<Vector2Int, Room> occupiedRooms, List<Door> doors, int depth)
     {
         if (iterations > THRESHOLD) throw new System.Exception("Iteration limit exceeded");
         if (doors.Count == 0)
@@ -54,8 +57,17 @@ public class MapGenerator : MonoBehaviour
         
         // pick door
         Door door = doors[Random.Range(0, doors.Count)];
-        print(doors.Count);
-        print(door.GetDirection());
+        foreach (Door d in doors)
+        {
+            print(d.GetGridCoordinates());
+            print(d.GetDirection());
+        }
+
+        foreach (var coo in occupied)
+        {
+            print("occupied: " + coo);
+        }
+        
         Door.Direction dir = door.GetMatchingDirection();
         List<Room> frontier = new List<Room>();
         
@@ -90,29 +102,27 @@ public class MapGenerator : MonoBehaviour
                 }
             }
             Room chosen = avail[Random.Range(0, avail.Count)];
+            var location = door.GetMatching().GetGridCoordinates();
             frontier.Remove(chosen);
-            doors.Remove(door);
             
             // see if room type can fit gap
-            GameObject placed = chosen.Place(door.GetMatching().GetGridCoordinates());
-            Room pr = placed.GetComponent<Room>();
+            GameObject placed = chosen.Place(location);
             bool reroll = false;
 
-            foreach (Door d in pr.GetDoors())
+            print("location: " + door.GetGridCoordinates());
+            print("just placed: " + location);
+            
+            // OFFSET IS NEW LOCATION
+            foreach (Door d in chosen.GetDoors(location))
             {
                 // if neighboring rooms are occupied
                 // otherwise we don't need to check for doors
-                if (occupied.Contains(d.GetMatching().GetGridCoordinates()))
+                var coords = d.GetMatching().GetGridCoordinates();
+                print("to match: " + coords + " " + d.GetDirection());
+                if (occupied.Contains(coords) && occupiedRooms.ContainsKey(coords))
                 {
-                    bool found = false;
-                    // if neighboring room has a door in that matching dir
-                    foreach (Door remaining in doors)
-                    {
-                        if (d.GetMatching().IsMatching(remaining))
-                        {
-                            found = true;
-                        }
-                    }
+                    bool found = occupiedRooms[coords].HasDoorOnSide(d.GetMatchingDirection());
+                    
                     // if we cannot find a matching door, that means there is a room there with a wall
                     if (!found)
                     {
@@ -125,42 +135,60 @@ public class MapGenerator : MonoBehaviour
 
             if (reroll)
             {
+                print("reroll");
                 Destroy(placed);
-                doors.Add(door);
                 continue;
             }
+            print("found all matching doors");
             
             // add doors from new room
-            foreach (Door d in chosen.GetDoors())
+            List<Door> added = new List<Door>();
+            foreach (Door d in chosen.GetDoors(location))
             {
                 if (d.GetMatchingDirection() != door.GetDirection())
                 {
                     doors.Add(d);
+                    added.Add(d);
                 }
             }
-            occupied.Add(door.GetMatching().GetGridCoordinates());
+            occupied.Add(location);
+            occupiedRooms.Add(location, chosen);
+            doors.Remove(door);
             
             
-            bool res = GenerateWithBacktracking(occupied, doors, depth + 1);
+            bool res = GenerateWithBacktracking(occupied, occupiedRooms, doors, depth + 1);
         
             // if false backtrack and try again
             if (!res)
             {
-                foreach (Door d in chosen.GetDoors())
+                foreach (Door d in added)
                 {
                     doors.Remove(d);
                 }
                 Destroy(placed);
                 doors.Add(door);
-                occupied.Remove(door.GetMatching().GetGridCoordinates());
+                occupied.Remove(location);
+                occupiedRooms.Remove(location);
             }
             else
             {
-                break;
+                foreach (Door d in chosen.GetDoors(location))
+                {
+                    if (d.IsHorizontal())
+                    {
+                        generated_objects.Add(horizontal_hallway.Place(d));
+                    }
+                    else
+                    {
+                        generated_objects.Add(vertical_hallway.Place(d));
+                    }
+                }
+                generated_objects.Add(placed);
+                return true;
             }
         }
         
-        return true;
+        return false;
     }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created

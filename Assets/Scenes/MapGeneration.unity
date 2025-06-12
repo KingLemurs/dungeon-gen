@@ -344,7 +344,7 @@ MonoBehaviour:
   start: {fileID: 7328084662367532751, guid: fbb7b04d19af1aa4aad44cc45b15c4d1, type: 3}
   target: {fileID: 7328084662367532751, guid: 0b2779608081820479b40f34b30be409, type: 3}
   MAX_SIZE: 25
-  THRESHOLD: 100000
+  THRESHOLD: 20
 --- !u!4 &1893224133
 Transform:
   m_ObjectHideFlags: 0

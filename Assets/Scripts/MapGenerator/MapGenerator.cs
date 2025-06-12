@@ -35,8 +35,8 @@ public class MapGenerator : MonoBehaviour
             Destroy(go);
         }
         generated_objects.Clear();
-        
-        generated_objects.Add(start.Place(new Vector2Int(0,0)));
+
+        generated_objects.Add(start.Place(new Vector2Int(0, 0)));
         List<Door> doors = start.GetDoors();
         List<Vector2Int> occupied = new List<Vector2Int>();
         Dictionary<Vector2Int, Room> occupiedRooms = new Dictionary<Vector2Int, Room>();
@@ -50,10 +50,31 @@ public class MapGenerator : MonoBehaviour
     bool GenerateWithBacktracking(List<Vector2Int> occupied, Dictionary<Vector2Int, Room> occupiedRooms, List<Door> doors, int depth)
     {
         if (iterations > THRESHOLD) throw new System.Exception("Iteration limit exceeded");
-        if (doors.Count == 0)
+        if (doors.Count == 0 && depth > 4)
         {
-            return depth > 4;
+            int minX = int.MaxValue, maxX = int.MinValue;
+            int minY = int.MaxValue, maxY = int.MinValue;
+
+            foreach (Vector2Int cell in occupied)
+            {
+                if (cell.x < minX) minX = cell.x;
+                if (cell.x > maxX) maxX = cell.x;
+                if (cell.y < minY) minY = cell.y;
+                if (cell.y > maxY) maxY = cell.y;
+            }
+
+            int width = maxX - minX + 1;
+            int height = maxY - minY + 1;
+
+            // if difference between width and height is too big, backtrack
+            if (Mathf.Abs(width - height) > 2)
+            {
+                return false;
+            }
+
+            return true;
         }
+
         
         // pick door
         Door door = doors[Random.Range(0, doors.Count)];

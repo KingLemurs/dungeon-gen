@@ -339,12 +339,16 @@ MonoBehaviour:
   - {fileID: 7328084662367532751, guid: 12c5b1ddc02561842b6f88a895dcbf2a, type: 3}
   - {fileID: 7328084662367532751, guid: da54436ae2124824ca2c3b0db3c161b6, type: 3}
   - {fileID: 7328084662367532751, guid: 28b1cf9aa0d85bb40b848849db84fdec, type: 3}
+  - {fileID: 7328084662367532751, guid: ebf64290b2c5e4950af00ec11307f21e, type: 3}
+  - {fileID: 7328084662367532751, guid: 3a7233a6f2a3744b5ba3031b2e2cd56f, type: 3}
+  - {fileID: 7328084662367532751, guid: 2b47dd4b660214f1d80f2b2570ad66c4, type: 3}
+  - {fileID: 7328084662367532751, guid: a68e68177b4604bd4a378159030a04c3, type: 3}
   vertical_hallway: {fileID: 5255264242106100983, guid: 23dab4baa5c4e3d4f9ab82b747040843, type: 3}
   horizontal_hallway: {fileID: 1508018506499616265, guid: da4748670254bcd48a9c066ed148bec1, type: 3}
   start: {fileID: 7328084662367532751, guid: fbb7b04d19af1aa4aad44cc45b15c4d1, type: 3}
   target: {fileID: 7328084662367532751, guid: 0b2779608081820479b40f34b30be409, type: 3}
-  MAX_SIZE: 25
-  THRESHOLD: 20
+  MAX_SIZE: 20
+  THRESHOLD: 500
 --- !u!4 &1893224133
 Transform:
   m_ObjectHideFlags: 0

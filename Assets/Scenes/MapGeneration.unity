@@ -343,6 +343,7 @@ MonoBehaviour:
   - {fileID: 7328084662367532751, guid: 3a7233a6f2a3744b5ba3031b2e2cd56f, type: 3}
   - {fileID: 7328084662367532751, guid: 2b47dd4b660214f1d80f2b2570ad66c4, type: 3}
   - {fileID: 7328084662367532751, guid: a68e68177b4604bd4a378159030a04c3, type: 3}
+  - {fileID: 7328084662367532751, guid: 66dc77534f2584e2b973876db3ab81e8, type: 3}
   vertical_hallway: {fileID: 5255264242106100983, guid: 23dab4baa5c4e3d4f9ab82b747040843, type: 3}
   horizontal_hallway: {fileID: 1508018506499616265, guid: da4748670254bcd48a9c066ed148bec1, type: 3}
   start: {fileID: 7328084662367532751, guid: fbb7b04d19af1aa4aad44cc45b15c4d1, type: 3}

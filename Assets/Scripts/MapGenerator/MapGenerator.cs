@@ -127,7 +127,6 @@ public class MapGenerator : MonoBehaviour
             frontier.Remove(chosen);
             
             // see if room type can fit gap
-            GameObject placed = chosen.Place(location);
             bool reroll = false;
 
             print("location: " + door.GetGridCoordinates());
@@ -157,7 +156,6 @@ public class MapGenerator : MonoBehaviour
             if (reroll)
             {
                 print("reroll");
-                Destroy(placed);
                 continue;
             }
             print("found all matching doors");
@@ -186,7 +184,6 @@ public class MapGenerator : MonoBehaviour
                 {
                     doors.Remove(d);
                 }
-                Destroy(placed);
                 doors.Add(door);
                 occupied.Remove(location);
                 occupiedRooms.Remove(location);
@@ -201,11 +198,13 @@ public class MapGenerator : MonoBehaviour
                     
                     generated_objects.Add(hallway);
                 }
+                GameObject placed = chosen.Place(location);
                 generated_objects.Add(placed);
                 return true;
             }
         }
-        
+
+
         return false;
     }
 
